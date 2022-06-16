@@ -1,15 +1,20 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import Loading from "./Loading";
 
 const SignUp = () => {
+  const [loading, setLoading] = useState(false);
   const {
     register,
     formState: { errors },
     handleSubmit,
+    reset,
   } = useForm();
 
   const onSubmit = async (user) => {
+    setLoading(true);
     const url = `http://localhost:5000/registerUser`;
     fetch(url, {
       method: "POST",
@@ -20,11 +25,20 @@ const SignUp = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        if(data.status === 409){
-          toast.error(`${data.message}`)
+        if (data.status === 409) {
+          toast.error(`${data.message}`);
+        } else {
+          toast.success("Register completed successfully!");
+          reset();
         }
+        setLoading(false);
       });
   };
+
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
     <div className="flex justify-center items-center min-h-screen mb-20">
       <div className="card w-96 bg-base-100 shadow-xl">

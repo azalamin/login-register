@@ -1,14 +1,38 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import Loading from "./Loading";
 
 const Login = () => {
+  const [loading, setLoading] = useState(false);
   const {
     register,
     formState: { errors },
     handleSubmit,
+    reset,
   } = useForm();
 
-  const onSubmit = (data) => {};
+  const onSubmit = (user) => {
+    setLoading(true);
+    const url = `http://localhost:5000/login?username=${user?.username}&password=${user?.password}`;
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        if (data.status === 404) {
+          toast.error(`${data.message}`);
+        } else {
+          toast.success("Login successful!");
+          reset();
+        }
+        setLoading(false);
+      });
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-slate-100">
@@ -18,32 +42,32 @@ const Login = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="form-control w-full max-w-xs">
               <label className="label">
-                <span className="label-text">Email</span>
+                <span className="label-text">Username</span>
               </label>
               <input
-                type="email"
-                placeholder="Your Email"
+                type="text"
+                placeholder="Username"
                 className="input input-bordered w-full max-w-xs"
-                {...register("email", {
+                {...register("username", {
                   required: {
                     value: true,
-                    message: "Email is Required",
+                    message: "Username is Required",
                   },
-                  pattern: {
-                    value: /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/,
-                    message: "Provide a valid Email",
+                  minLength: {
+                    value: 4,
+                    message: "At least length should be 4",
                   },
                 })}
               />
               <label className="label">
-                {errors.email?.type === "required" && (
+                {errors.username?.type === "required" && (
                   <span className="label-text-alt text-red-500">
-                    {errors.email.message}
+                    {errors.username.message}
                   </span>
                 )}
-                {errors.email?.type === "pattern" && (
+                {errors.username?.type === "minLength" && (
                   <span className="label-text-alt text-red-500">
-                    {errors.email.message}
+                    {errors.username.message}
                   </span>
                 )}
               </label>
