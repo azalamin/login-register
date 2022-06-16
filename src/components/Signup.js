@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const {
@@ -8,32 +9,56 @@ const SignUp = () => {
     handleSubmit,
   } = useForm();
 
-  const onSubmit = async (data) => {};
+  const onSubmit = async (user) => {
+    const url = `http://localhost:5000/registerUser`;
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(user),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if(data.status === 409){
+          toast.error(`${data.message}`)
+        }
+      });
+  };
   return (
     <div className="flex justify-center items-center min-h-screen mb-20">
       <div className="card w-96 bg-base-100 shadow-xl">
         <div className="card-body">
-          <h2 className="text-center text-2xl font-bold">Sign Up</h2>
+          <h2 className="text-center text-2xl font-bold">Register</h2>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="form-control w-full max-w-xs">
               <label className="label">
-                <span className="label-text">Name</span>
+                <span className="label-text">Username</span>
               </label>
               <input
                 type="text"
-                placeholder="Your Name"
+                placeholder="Username"
                 className="input input-bordered w-full max-w-xs"
-                {...register("name", {
+                {...register("username", {
                   required: {
                     value: true,
-                    message: "Name is Required",
+                    message: "Username is required",
+                  },
+                  minLength: {
+                    value: 4,
+                    message: "At least length should be 4",
                   },
                 })}
               />
               <label className="label">
-                {errors.name?.type === "required" && (
+                {errors.username?.type === "required" && (
                   <span className="label-text-alt text-red-500">
-                    {errors.name.message}
+                    {errors.username.message}
+                  </span>
+                )}
+                {errors.username?.type === "minLength" && (
+                  <span className="label-text-alt text-red-500">
+                    {errors.username.message}
                   </span>
                 )}
               </label>
@@ -103,11 +128,10 @@ const SignUp = () => {
                 )}
               </label>
             </div>
-
             <input
               className="btn w-full max-w-xs text-white"
               type="submit"
-              value="Sign Up"
+              value="Register"
             />
           </form>
           <p>
